@@ -1,0 +1,14 @@
+# vs code setting
+.vscode/
+
+# aiogram doc
+outside_doc/
+
+# python venv
+venv/
+
+# unwanted
+/test.py
+/todo.md
+/*.log
+/*.json
