@@ -362,6 +362,6 @@ class PreferenceController:
                         grid.append(remaining_items)
                         remaining_items = 0
             else:
-                grid.append([2] * 4)
+                grid.extend([2] * 4)
 
         return grid
