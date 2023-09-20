@@ -175,8 +175,10 @@ class BookModel:
         def get_authors(self):
                 conn = DB()
                 cursor = conn.cursor()
-
-                sql = "SELECT DISTINCT book_id as author_id,book_author as author_name FROM book"
+                sql = "SELECT book_id as author_id,book_author as \
+                        author_name,COUNT(*) AS author_count FROM book \
+                        WHERE book_author NOT LIKE 'unknown%' GROUP BY \
+                        book_author ORDER BY author_count DESC"
                 cursor.execute(sql)
 
                 authors = cursor.fetchall()

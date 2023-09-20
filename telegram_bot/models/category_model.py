@@ -40,7 +40,9 @@ class CategoryModel:
                 conn = DB()
                 cursor = conn.cursor()
 
-                sql = "SELECT category_id,category_name FROM category WHERE sub_category_parent_id=0"
+                sql = "SELECT category_id,category_name FROM category WHERE \
+                        sub_category_parent_id=0 AND category_name NOT \
+                        LIKE 'Uncategorized%'"
                 cursor.execute(sql)
 
                 result = cursor.fetchall()

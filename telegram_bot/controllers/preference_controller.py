@@ -174,7 +174,7 @@ class PreferenceController:
                 inline_buttons.append("✅ " + str(author[0]))
             else:
                 inline_buttons.append(str(author[0]))
-
+        
         list_authors_per_page = 8
         total_list_pages = ceil(len(inline_buttons) / list_authors_per_page)
 
