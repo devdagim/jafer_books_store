@@ -1,0 +1,15 @@
+python>=3.10
+aiogram=3.x
+schedule=
+pyee=11.0.0
+ngrok-0.9.0
+-aiogram-datepicker
+-aiogram-timepicker
+-aiogram_widgets
+scrapy>=2.10
+mysql-connector-python>=8.1.0
+-googletrans=4.0.0rc1
+-unidecode-1.3.6
+-Flask>=2.3.3
+fastapi-0.103.1
+uvicorn-0.23.2
