@@ -122,10 +122,7 @@ async def preference_form_submit_handler(query: CallbackQuery):
     if is_filled_genre_pref_form:
         await query.message.reply(
             text="""
-            Your book preferences are received. Our bot will curate personalized recommendations just for you.
-
-            You can retrieve your book recommendations anytime 
-            by typing /recommendation
+            Your book preferences are received. Our bot will curate personalized recommendations just for you.\nYou can retrieve your book recommendations anytime by typing /recommendation
             """
         )
     else:
