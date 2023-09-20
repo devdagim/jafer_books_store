@@ -4,8 +4,9 @@
 # aiogram doc
 outside_doc/
 
-# python venv
+# python venv and catch
 venv/
+**/__pycache__
 
 # unwanted
 /test.py
