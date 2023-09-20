@@ -23,7 +23,7 @@ class AioMysqlStorage(BaseStorage):
         Initialize the MySQL database by creating the required tables if they
         don't exist.
         """
-        conn = self._get_connection()
+        conn = DB()
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -42,7 +42,7 @@ class AioMysqlStorage(BaseStorage):
             );
         """
         )
-        conn.close()
+        cursor.close()
 
     def _get_connection(self):
         """
@@ -51,12 +51,12 @@ class AioMysqlStorage(BaseStorage):
         If the connection is not already established, it will connect to the
         database.
         """
-
-        if DB.is_connected():
-            return DB
-        else:
-            DB.connect()
-            return DB
+        # if DB.is_connected():
+        #     return DB
+        # else:
+        #     DB.reconnect(attempts=3)
+        #     return DB
+        return DB()
 
     async def set_state(
         self, key: StorageKey, state: str | State | None = None
@@ -71,7 +71,7 @@ class AioMysqlStorage(BaseStorage):
         Returns:
             None
         """
-        conn = self._get_connection()
+        conn = DB()
         cursor = conn.cursor()
 
         state_value = None
@@ -96,6 +96,8 @@ class AioMysqlStorage(BaseStorage):
             )
         conn.commit()
 
+        cursor.close()
+
     async def get_state(self, key: StorageKey) -> str | None:
         """
         Get the state associated with a specific key from the storage.
@@ -106,14 +108,15 @@ class AioMysqlStorage(BaseStorage):
         Returns:
             The state associated with the key, or None if not found.
         """
-
-        conn = self._get_connection()
+        conn = DB()
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
             "SELECT state FROM aiogram_fsm_state WHERE user_id=%s AND chat_id=%s",
             (key.user_id, key.chat_id),
         )
         result = cursor.fetchone()
+
+        cursor.close()
 
         return result["state"] if result else None
 
@@ -128,8 +131,7 @@ class AioMysqlStorage(BaseStorage):
         Returns:
             None
         """
-
-        conn = self._get_connection()
+        conn = DB()
         cursor = conn.cursor()
         if data:
             for data_key, data_value in data.items():
@@ -146,6 +148,8 @@ class AioMysqlStorage(BaseStorage):
             )
         conn.commit()
 
+        cursor.close()
+
     async def get_data(self, key: StorageKey) -> Dict[str, Any]:
         """
         Get the data associated with a specific key from the storage.
@@ -156,8 +160,7 @@ class AioMysqlStorage(BaseStorage):
         Returns:
             The data associated with the key as a dictionary.
         """
-
-        conn = self._get_connection()
+        conn = DB()
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
             "SELECT data_key, data_value FROM aiogram_fsm_data WHERE \
@@ -165,6 +168,8 @@ class AioMysqlStorage(BaseStorage):
             (key.user_id, key.chat_id),
         )
         results = cursor.fetchall()
+
+        cursor.close()
 
         if results:
             # {'data_key': 'book_code', 'data_value': 'jb_1592'}
@@ -193,8 +198,7 @@ class AioMysqlStorage(BaseStorage):
         Returns:
             The updated data associated with the key as a dictionary.
         """
-
-        conn = self._get_connection()
+        conn = DB()
         cursor = conn.cursor()
         for data_key, data_value in data.items():
             cursor.execute(
@@ -204,6 +208,8 @@ class AioMysqlStorage(BaseStorage):
             )
         conn.commit()
 
+        cursor.close()
+
         return self.get_data(key=key)
 
     async def close(self) -> None:
@@ -211,4 +217,4 @@ class AioMysqlStorage(BaseStorage):
         Close the database connection.
         """
 
-        self._get_connection().close()
+        DB().close()
