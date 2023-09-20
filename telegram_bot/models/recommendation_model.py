@@ -25,6 +25,7 @@ class RecommendationModel:
         cursor.execute(sql, (limit_start, end))
 
         result = cursor.fetchall()
+        cursor.close()
 
         return result if result else None
 
@@ -56,6 +57,12 @@ class RecommendationModel:
         SELECT book_code FROM book WHERE book_author IN (
             SELECT author_name FROM author_preference WHERE user_id={current_user_id}
         ) OR book_category IN (
-            SELECT category_id FROM genre_preference WHERE user_id={current_user_id}
-        )
+            SELECT category_id FROM category WHERE  category_id IN(
+                SELECT category_id FROM genre_preference WHERE user_id={current_user_id}
+            )
+        ) OR book_category IN (
+            SELECT sub_category_parent_id FROM category WHERE  sub_category_parent_id IN(
+                SELECT category_id FROM genre_preference WHERE user_id={current_user_id}
+            )
+        ) 
         """

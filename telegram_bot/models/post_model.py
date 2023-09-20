@@ -107,7 +107,7 @@ class PostModel:
         result = cursor.fetchone()
 
         # close
-        cursor.close()
+        # cursor.close()
 
         return result[0] if result else " "
 

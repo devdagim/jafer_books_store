@@ -17,6 +17,7 @@ class PreferenceModel:
         cursor.execute(sql, (user_id,))
 
         result = cursor.fetchone()
+        cursor.close()
 
         return bool(result[0])
 
