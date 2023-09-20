@@ -1,3 +1,4 @@
+import logging
 import mysql.connector as mysql_db
 from telegram_bot.helpers.config import CONFIG
 
@@ -9,17 +10,18 @@ DB_USER = CONFIG.get("database", "DB_USER").strip('"')
 DB_PASSWORD = CONFIG.get("database", "DB_PASSWORD").strip('"')
 
 
-def get_db_cnx():
-    cnx = mysql_db.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-    )
+def get_conn():
+    try:
+        connection = mysql_db.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+        )
+        return connection
+    except mysql_db.Error as error:
+        logging.critical(f"Error occurred during connection: {error}")
+        return None
 
-    with cnx:
-        return cnx
-
-
-DB = get_db_cnx()
+DB = get_conn

@@ -3,7 +3,8 @@ from telegram_bot.helpers.db import DB
 
 class RecommendationModel:
     def recommended_books(self, user_id, fetch_limit):
-        cursor = DB.cursor(dictionary=True)
+        conn = DB()
+        cursor = conn.cursor(dictionary=True)
 
         books_rated_by_slimier_book_rater = (
             self._books_rated_by_slimier_book_rater(current_user_id=user_id)

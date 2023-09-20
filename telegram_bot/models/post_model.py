@@ -3,7 +3,8 @@ from telegram_bot.helpers.db import DB
 
 class PostModel:
     def check_unposted_books(self):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor()
 
         sql = "SELECT COUNT(book_code) FROM post WHERE book_post_status='0';"
         cursor.execute(sql)
@@ -16,7 +17,8 @@ class PostModel:
         return bool(unposted_books)
 
     def get_unposted_books(self, fetch_limit):
-        cursor = DB.cursor(dictionary=True)
+        conn = DB()
+        cursor = conn.cursor(dictionary=True)
 
         sql = "SELECT book.book_code,book_name,book_author,book_etb_price,\
                 book_usd_price,book_img_url,book_category,book_language,\
@@ -32,7 +34,8 @@ class PostModel:
         return unposted_books
 
     def get_updated_books(self, fetch_limit):
-        cursor = DB.cursor(dictionary=True)
+        conn = DB()
+        cursor = conn.cursor(dictionary=True)
 
         sql = "SELECT b.book_code,b.book_name,b.book_author,b.book_etb_price,\
                 b.book_usd_price,b.book_img_url,b.book_category,\
@@ -48,7 +51,8 @@ class PostModel:
         return updated_books
 
     def updated_books_count(self):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor()
 
         sql = (
             "SELECT COUNT(book_code) FROM book WHERE book_content_status='1';"
@@ -66,7 +70,8 @@ class PostModel:
             return 0
 
     def unposted_books_count(self):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor()
 
         sql = "SELECT COUNT(book_code) FROM post WHERE book_post_status='0';"
         cursor.execute(sql)
@@ -82,18 +87,20 @@ class PostModel:
             return 0
 
     def save_post(self, post_id, book_code):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor()
 
         sql = "UPDATE post SET telegram_post_id=%s ,book_post_status='1'\
                 WHERE book_code=%s;"
         cursor.execute(sql, (post_id, book_code))
-        DB.commit()
+        conn.commit()
 
         # close
         cursor.close()
 
     def get_post_id(self, book_code):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor()
 
         sql = "SELECT telegram_post_id FROM post WHERE book_code=%s"
         cursor.execute(sql, (book_code,))
@@ -106,11 +113,12 @@ class PostModel:
 
     def update_book_content_status(self, book_code):
         # UPDATE book SET book_content_status='1' WHERE book_code=
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor()
 
         sql = "UPDATE book SET book_content_status='0' WHERE book_code=%s;"
         cursor.execute(sql, (book_code,))
-        DB.commit()
+        conn.commit()
 
         # close
         cursor.close()
