@@ -22,7 +22,7 @@ class CategoryModel:
         # extract category_id form category table using category name
         def get_category_id(self, category_name) -> int:
                 conn = DB()
-                cursor = conn.cursor()
+                cursor = conn.cursor(buffered=True)
 
                 sql = "SELECT category_id FROM category WHERE \
                                         category_name=%s"
@@ -55,7 +55,7 @@ class CategoryModel:
         # checks the existence of the category attr
         def is_exist(self, category_name) -> bool:
                 conn = DB()
-                cursor = conn.cursor()
+                cursor = conn.cursor(buffered=True)
 
                 sql = "SELECT category_id FROM category WHERE\
                                         category_name=%s"
@@ -70,7 +70,7 @@ class CategoryModel:
 
         def get_book_category(self, category_id):
                 conn = DB()
-                cursor = conn.cursor()
+                cursor = conn.cursor(buffered=True)
 
                 sql = """
                                         SELECT CONCAT(

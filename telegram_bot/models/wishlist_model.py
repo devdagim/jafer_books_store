@@ -28,7 +28,7 @@ class WishlistModel:
 
     def get_total_list(self, user_id: int):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
         select_sql = "SELECT COUNT(book_code) FROM wishlist WHERE user_id=%s"
         cursor.execute(select_sql, (user_id,))
 

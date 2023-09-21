@@ -109,7 +109,7 @@ class AioMysqlStorage(BaseStorage):
             The state associated with the key, or None if not found.
         """
         conn = DB()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary=True,buffered=True)
         cursor.execute(
             "SELECT state FROM aiogram_fsm_state WHERE user_id=%s AND chat_id=%s",
             (key.user_id, key.chat_id),

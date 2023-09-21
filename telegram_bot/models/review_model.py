@@ -4,7 +4,7 @@ from telegram_bot.helpers.db import DB
 class ReviewModel:
     def book_avg_rating(self, book_code):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
         sql = (
             "SELECT ROUND(AVG(rating),1) FROM book_review WHERE book_code=%s;"
@@ -22,7 +22,7 @@ class ReviewModel:
         conn = DB()
         cursor = conn.cursor()
 
-        if self._is_review_exist(cursor, book_code, user_id):
+        if self._is_review_exist(book_code, user_id):
             sql = "UPDATE book_review SET rating=%s,review=%s WHERE \
                 book_code=%s AND user_id=%s"
             cursor.execute(sql, (rating, review, book_code, user_id))
@@ -37,10 +37,14 @@ class ReviewModel:
         # close
         cursor.close()
 
-    def _is_review_exist(self, cursor, book_code, user_id):
+    def _is_review_exist(self, book_code, user_id):
+        conn = DB()
+        cursor = conn.cursor(buffered=True)
         sql = "SELECT COUNT(*) FROM book_review WHERE book_code=%s AND user_id=%s"
         cursor.execute(sql, (book_code, user_id))
+
         is_exists = cursor.fetchone()
+        cursor.close()
 
         return bool(is_exists[0])
 
@@ -61,7 +65,7 @@ class ReviewModel:
 
     def total_reviews(self, book_code):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
         sql = "SELECT COUNT(*) FROM book_review WHERE book_code=%s"
         cursor.execute(sql, (book_code,))

@@ -7,7 +7,7 @@ class PreferenceModel:
 
     def is_set_preference(self, user_id, preference_type):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
         if preference_type == "author":
             sql = "SELECT COUNT(*) FROM author_preference WHERE user_id=%s"
@@ -24,7 +24,7 @@ class PreferenceModel:
     # tempo_author_id is the author_id alone side with book_id(it uses the book id)
     def _is_preference_exist(self, user_id, id, preference_type):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
         if preference_type == "author":
             sql = "SELECT COUNT(*) FROM author_preference WHERE user_id=%s \
@@ -87,7 +87,7 @@ class PreferenceModel:
 
     def get_pref_id_by_author_name(self, user_id, author_name):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
         sql = "SELECT pref_id FROM author_preference WHERE user_id=%s AND author_name=%s"
         cursor.execute(sql, (user_id, author_name))
@@ -101,7 +101,7 @@ class PreferenceModel:
 
     def get_pref_id_by_category_id(self, user_id, category_id):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
         sql = "SELECT pref_id FROM genre_preference WHERE user_id=%s AND category_id=%s"
         cursor.execute(sql, (user_id, category_id))

@@ -52,7 +52,7 @@ class PostModel:
 
     def updated_books_count(self):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
         sql = (
             "SELECT COUNT(book_code) FROM book WHERE book_content_status='1';"
@@ -71,7 +71,7 @@ class PostModel:
 
     def unposted_books_count(self):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
         sql = "SELECT COUNT(book_code) FROM post WHERE book_post_status='0';"
         cursor.execute(sql)
@@ -100,11 +100,13 @@ class PostModel:
 
     def get_post_id(self, book_code):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
         sql = "SELECT telegram_post_id FROM post WHERE book_code=%s"
         cursor.execute(sql, (book_code,))
+
         result = cursor.fetchone()
+        cursor.close()
 
         return result[0] if result else None
 

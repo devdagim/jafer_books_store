@@ -68,7 +68,7 @@ class BookModel:
         # check the book exist in the table
         def is_exist(self, book_code) -> bool:
                 conn = DB()
-                cursor = conn.cursor()
+                cursor = conn.cursor(buffered=True)
 
                 sql = "SELECT book_id FROM book WHERE\
                         book_code =%s"
@@ -83,7 +83,7 @@ class BookModel:
         
         def get_book(self, book_code):
                 conn = DB()
-                cursor = conn.cursor(dictionary=True)
+                cursor = conn.cursor(dictionary=True,buffered=True)
 
                 sql = "SELECT * FROM book WHERE\
                         book_code =%s"
@@ -98,7 +98,7 @@ class BookModel:
         
         def get_author_by_book_id(self, book_id):
                 conn = DB()
-                cursor = conn.cursor()
+                cursor = conn.cursor(buffered=True)
 
                 sql = "SELECT book_author FROM book WHERE\
                         book_id =%s"
@@ -114,7 +114,7 @@ class BookModel:
         # check the specific columns are changed form the table
         def is_changed(self, changeable_columns) -> bool:
                 conn = DB()
-                cursor = conn.cursor()
+                cursor = conn.cursor(buffered=True)
 
                 sql = "SELECT book_id FROM book WHERE book_code =%s AND \
                         (book_etb_price != %s OR book_usd_price != %s \
