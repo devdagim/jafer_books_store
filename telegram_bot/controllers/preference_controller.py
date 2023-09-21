@@ -255,7 +255,6 @@ class PreferenceController:
                 inline_buttons.append("✅ " + category[1])
             else:
                 inline_buttons.append(category[1])
-        print("inline_buttons",inline_buttons)
 
         for inline_btn_text in inline_buttons:
             if inline_btn_text.startswith("✅"):
