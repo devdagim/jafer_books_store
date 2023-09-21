@@ -7,6 +7,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 
 # project
+from telegram_bot.middleware import ChannelJoinedMiddleware
 from telegram_bot.filter import BotDeepLink
 from telegram_bot.helpers.executor import Execute
 
@@ -14,6 +15,10 @@ from telegram_bot.helpers.executor import Execute
 review_form_router = Router(name="REVIEW FORM ROUTER")
 review_form_state_router = Router(name="REVIEW FORM state ROUTER")
 
+
+review_form_router.message.middleware(
+    ChannelJoinedMiddleware(["deep_link::write_review&book_code={str}"])
+)
 
 class ReviewFormState(StatesGroup):
     review_cmt = State()

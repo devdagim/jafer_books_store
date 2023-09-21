@@ -45,15 +45,17 @@ How would you like to search for books? 📚🔍
 
 Search:
 by 👤 Book Author: <code>{bot_username} [book author name]</code>
+
 by 📚 Book Title: <code>{bot_username} [book title]</code>
-by 🔖 Book Genre: <code>{bot_username} [book genre name] or [author name]</code>
+
+by 🔖 Book Genre: <code>{bot_username} [book genre name]</code>
 
 Example: to search for books by the author
 <code>{bot_username} J.K. Rowling</code>
 
 Example: to search for a book with the title
-<code>{bot_username} book: Harry Potter</code>
+<code>{bot_username} Harry Potter</code>
 
 Example: to search for books by the genre
-<code>{bot_username} fiction/code>
+<code>{bot_username} fiction</code>
 """

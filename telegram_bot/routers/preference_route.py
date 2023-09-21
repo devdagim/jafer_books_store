@@ -6,9 +6,15 @@ from aiogram.types import Message, CallbackQuery
 
 # project
 from telegram_bot.helpers.executor import Execute
+from telegram_bot.middleware import ChannelJoinedMiddleware
 from telegram_bot.models.preference_model import PreferenceModel
 
 preference_router = Router(name="Book Preference Route")
+
+
+preference_router.message.middleware(
+    ChannelJoinedMiddleware(["command::preference"])
+)
 
 
 @preference_router.message(Command("preference"))

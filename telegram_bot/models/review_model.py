@@ -16,7 +16,7 @@ class ReviewModel:
         # close
         cursor.close()
 
-        return result[0] if result else 0
+        return result[0] if result[0] is not None else 0
 
     def save_review(self, book_code, user_id, rating, review=None):
         conn = DB()
