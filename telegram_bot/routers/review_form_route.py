@@ -1,7 +1,7 @@
 # aiogram
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
-from aiogram.filters import CommandStart, CommandObject, Command
+from aiogram.filters import CommandStart, CommandObject, Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
@@ -19,7 +19,7 @@ class ReviewFormState(StatesGroup):
 
 
 @review_form_router.message(
-    CommandStart(deep_link=True,deep_link_encoded=True),
+    CommandStart(deep_link=True, deep_link_encoded=True),
     BotDeepLink("write_review&book_code={str}"),
 )
 async def write_review_handler(
@@ -54,8 +54,7 @@ async def rating_handler(query: CallbackQuery, state: FSMContext):
 
 
 @review_form_router.message(
-    ReviewFormState.review_cmt,
-    Command("cancel"),
+    StateFilter(ReviewFormState.review_cmt) and Command("cancel"),
 )
 async def cancel_review_commenting(message: Message, state: FSMContext):
     data = await state.get_data()
@@ -76,7 +75,7 @@ async def cancel_review_commenting(message: Message, state: FSMContext):
 
 
 @review_form_router.message(
-    ReviewFormState.review_cmt, F.content_type == "text"
+    StateFilter(ReviewFormState.review_cmt) and F.content_type == "text"
 )
 async def review_cmt_handler(message: Message, state: FSMContext):
     data = await state.get_data()
