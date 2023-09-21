@@ -88,11 +88,6 @@ class ReviewFormController:
             <b>Error: Review exceeded the limit.</b>\nPlease keep your review within 250 characters for a concise summary.
             """
 
-        elif len(review) < 20:
-            error_text = """
-            <b>Error: Review too short</b>.\nPlease provide a more detailed review with at least 50 characters.
-            """
-
         return error_text
 
     def _rating_form_inline_btn(self):
