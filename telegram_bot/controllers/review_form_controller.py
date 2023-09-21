@@ -80,20 +80,17 @@ class ReviewFormController:
 
         if entities_in_review:
             error_text = """
-            <b>Error: Only text characters are allowed.</b>
-            Please don't use any commands, URLs, or any entities, just pure text.
+            <b>Error: Only text characters are allowed.</b>\nPlease don't use any commands, URLs, or any entities, just pure text.
             """
 
         elif len(review) > 250:
             error_text = """
-            <b>Error: Review exceeded the limit.</b>
-            Please keep your review within 250 characters for a concise summary.
+            <b>Error: Review exceeded the limit.</b>\nPlease keep your review within 250 characters for a concise summary.
             """
 
-        elif len(review) < 50:
+        elif len(review) < 20:
             error_text = """
-            <b>Error: Review too short</b>.
-            Please provide a more detailed review with at least 50 characters.
+            <b>Error: Review too short</b>.\nPlease provide a more detailed review with at least 50 characters.
             """
 
         return error_text
