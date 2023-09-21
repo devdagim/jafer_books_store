@@ -241,7 +241,6 @@ class PreferenceController:
         total_categories = self.category_model.total_categories()
         list_category_per_page = 8
         total_list_pages = ceil(total_categories / list_category_per_page)
-        print("tl_pages",total_list_pages,"tl_catg",total_categories)
         limit_start = (current_page - 1) * list_category_per_page
         
 
@@ -286,7 +285,6 @@ class PreferenceController:
         pagination_buttons = self._pagination_buttons(
             current_page, total_list_pages, "genre_pref_page"
         )
-        print("inline_buttons",pagination_buttons)
         btn_builder.add(*pagination_buttons)
 
         next_step_btn = InlineKeyboardButton(
@@ -301,12 +299,10 @@ class PreferenceController:
             list_per_page=8,
             current_page=current_page,
         )
-        print("inline_buttons_row_size",inline_buttons_row_size)
         pagination_buttons_row_size = [
             len(pagination_buttons),
             1,
         ]
-        print("pagination_buttons_row_size",pagination_buttons_row_size)
         btn_builder.adjust(
             *inline_buttons_row_size, *pagination_buttons_row_size
         )
