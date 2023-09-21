@@ -164,14 +164,14 @@ class BookModel:
                 
                 return result if result else None
 
-        def get_authors(self):
+        def get_authors(self, limit_start):
                 conn = DB()
                 cursor = conn.cursor()
                 sql = "SELECT book_id as author_id,book_author as \
                         author_name,COUNT(*) AS author_count FROM book \
                         WHERE book_author NOT LIKE 'unknown%' GROUP BY \
-                        author_name ORDER BY author_count DESC"
-                cursor.execute(sql)
+                        author_name ORDER BY author_count DESC LIMIT %s,8"
+                cursor.execute(sql, (limit_start,))
 
                 authors = cursor.fetchall()
 
@@ -179,3 +179,17 @@ class BookModel:
                 cursor.close()
                 
                 return authors
+        
+        def total_authors(self):
+                conn = DB()
+                cursor = conn.cursor(buffered=True)
+                sql = "SELECT COUNT(DISTINCT book_author) AS total_authors \
+                        FROM book WHERE book_author NOT LIKE 'unknown%';"
+                cursor.execute(sql)
+
+                total = cursor.fetchone()
+
+                # close
+                cursor.close()
+                
+                return total[0] if total else 0

@@ -159,13 +159,19 @@ class PreferenceController:
     def _author_listing_inline_btn(self, user_id, current_page=1):
         btn_builder = InlineKeyboardBuilder()
 
-        authors = self.book_model.get_authors()
+        # pagination
+        total_authors = self.book_model.total_authors()
+        list_authors_per_page = 8
+        total_list_pages = ceil(total_authors / list_authors_per_page)
+
+        limit_start = (current_page - 1) * list_authors_per_page
+
+        authors = self.book_model.get_authors(limit_start)
         preferred_authors = self.preference_model.get_preferred_authors(
             user_id
         )
 
         inline_buttons = []
-
         for author in authors:
             if any(
                 author[1] == pref_author[1]
@@ -174,18 +180,10 @@ class PreferenceController:
                 inline_buttons.append("✅ " + str(author[0]))
             else:
                 inline_buttons.append(str(author[0]))
-        
-        list_authors_per_page = 8
-        total_list_pages = ceil(len(inline_buttons) / list_authors_per_page)
 
-        limit_start = (current_page - 1) * list_authors_per_page
-        limit_end = limit_start + list_authors_per_page
-
-        limited_inline_buttons = inline_buttons[limit_start:limit_end]
-
-        for inline_button_text in limited_inline_buttons:
-            if inline_button_text.startswith("✅"):
-                author_tempo_id = inline_button_text.split("✅")[-1].strip()
+        for inline_btn_text in inline_buttons:
+            if inline_btn_text.startswith("✅"):
+                author_tempo_id = inline_btn_text.split("✅")[-1].strip()
                 author_name = self.book_model.get_author_by_book_id(
                     int(author_tempo_id)
                 )
@@ -195,7 +193,7 @@ class PreferenceController:
                     f"remove_author_from_pref:{author_tempo_id}:{current_page}"
                 )
             else:
-                author_tempo_id = inline_button_text
+                author_tempo_id = inline_btn_text
                 author_name = self.book_model.get_author_by_book_id(
                     int(author_tempo_id)
                 )
@@ -223,7 +221,7 @@ class PreferenceController:
 
         # [author_ls=3,3,3,pag_btn=3/2,genre_prf=1]
         inline_buttons_row_size = self._btn_grid(
-            total_list=len(inline_buttons),
+            total_list=total_list_pages,
             list_per_page=8,
             current_page=current_page,
         )
