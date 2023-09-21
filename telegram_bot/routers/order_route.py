@@ -1,9 +1,8 @@
 # aiogram
-from aiogram import Router, F, Bot
+from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import CommandStart, CommandObject
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
 
 # project
 from telegram_bot.filter import BotDeepLink
@@ -12,19 +11,13 @@ from telegram_bot.helpers.executor import Execute
 
 order_router = Router(name="ORDER_ROUTE")
 
-# format of order_now btn /start?order_now_btn&book_code={book_code}
-# located in channel post as inline btn
 order_router.message.middleware(
-    ChannelJoinedMiddleware(["order_now_btn&book_code={str}"])
+    ChannelJoinedMiddleware(["deep_link::order_now_btn&book_code={str}"])
 )
 
 
-class OrderState(StatesGroup):
-    order_method = State()
-
-
 @order_router.message(
-    CommandStart(deep_link=True,deep_link_encoded=True),
+    CommandStart(deep_link=True, deep_link_encoded=True),
     BotDeepLink("order_now_btn&book_code={str}"),
 )
 async def order_btn_handler(
@@ -33,8 +26,7 @@ async def order_btn_handler(
     deep_link = command.args
     book_code = deep_link.split("=")[-1]
 
-    # set state and data
-    await state.set_state(OrderState.order_method)
+    # set  data
     await state.set_data({"book_code": book_code})
     # send order options
     await Execute(
@@ -44,22 +36,22 @@ async def order_btn_handler(
     ).exc()
 
 
-@order_router.callback_query(
-    OrderState.order_method, F.data.startswith("order_option:")
-)
+@order_router.callback_query(F.data.startswith("order_option:"))
 async def order_option_inline_btn_handler(
     query: CallbackQuery, state: FSMContext
 ):
-    data = {
-        "order_option": query.data.split("order_option:")[-1],
-        "book_code": (await state.get_data())["book_code"],
-    }
+    session_data = await state.get_data()
 
-    await Execute(
-        "controllers.order_controller",
-        "OrderController@send_selected_order_option",
-        query=query,
-        data=data,
-    ).exc()
+    if session_data["book_code"]:
+        order_option = query.data.split("order_option:")[-1]
+        book_code = session_data["book_code"]
 
-    await state.clear()
+        await Execute(
+            "controllers.order_controller",
+            "OrderController@send_selected_order_option",
+            query=query,
+            book_code=book_code,
+            order_option=int(order_option),
+        ).exc()
+
+        await state.clear()
