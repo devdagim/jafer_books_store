@@ -170,7 +170,8 @@ class BookModel:
                 sql = "SELECT book_id as author_tempo_id,book_author as \
                         author_name,COUNT(*) AS author_count FROM book \
                         WHERE book_author NOT LIKE 'unknown%' GROUP BY \
-                        author_name ORDER BY author_count DESC LIMIT %s,8"
+                        author_name ORDER BY author_count DESC, \
+                        author_name ASC LIMIT %s,8"
                 cursor.execute(sql, (limit_start,))
 
                 authors = cursor.fetchall()

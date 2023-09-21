@@ -53,3 +53,18 @@
     user_id
     author_name
     genre_id
+
+utf8mb4_ethiopian_ci. You can use this collation to ensure proper sorting of Amharic named column values. Here's an example of how to set the collation for a column:
+
+sql
+Copy
+ALTER TABLE YourTable MODIFY COLUMN YourColumn VARCHAR(255) COLLATE utf8mb4_ethiopian_ci;
+
+To set the collation for the column that contains both Amharic and English values, you can use the following SQL statement:
+
+sql
+Copy
+ALTER TABLE YourTable MODIFY COLUMN YourColumn VARCHAR(255) COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE book 
+	CHANGE book_author book_author varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
