@@ -81,10 +81,11 @@ class PreferenceController:
 
     async def add_author_to_pref(self, query, author_tempo_id, page_num):
         user_id = str(query.from_user.id)
+        author_name = self.book_model.get_author_by_book_id(author_tempo_id)
 
         # add author to the pref table
         self.preference_model.save_preference(
-            user_id=user_id, id=author_tempo_id, preference_type="author"
+            user_id=user_id, author_name=author_name, preference_type="author"
         )
 
         # send the updated list
@@ -101,7 +102,7 @@ class PreferenceController:
 
         # add author to the pref table
         self.preference_model.save_preference(
-            user_id=user_id, id=category_id, preference_type="genre"
+            user_id=user_id, category_id=category_id, preference_type="genre"
         )
 
         # send the updated list
@@ -113,18 +114,13 @@ class PreferenceController:
             ),
         )
 
-    async def remove_author_from_pref(self, query, author_tempo_id, page_num):
+    async def remove_author_from_pref(self, query, pref_id, page_num):
         user_id = str(query.from_user.id)
-        author_name = self.book_model.get_author_by_book_id(author_tempo_id)
-        pref_id = self.preference_model.get_pref_id_by_author_name(
-            user_id, author_name
-        )
 
-        if pref_id:
-            # remove author to the pref table
-            self.preference_model.remove_preference(
-                user_id=user_id, pref_id=pref_id, preference_type="author"
-            )
+        # remove author to the pref table
+        self.preference_model.remove_preference(
+            user_id=user_id, pref_id=pref_id, preference_type="author"
+        )
 
         # send the updated list
         await query.message.edit_text(
@@ -135,17 +131,13 @@ class PreferenceController:
             ),
         )
 
-    async def remove_genre_from_pref(self, query, category_id, page_num):
+    async def remove_genre_from_pref(self, query, pref_id, page_num):
         user_id = str(query.from_user.id)
-        pref_id = self.preference_model.get_pref_id_by_category_id(
-            user_id, category_id
-        )
 
-        if pref_id:
-            # remove author to the pref table
-            self.preference_model.remove_preference(
-                user_id=user_id, pref_id=pref_id, preference_type="genre"
-            )
+        # remove author to the pref table
+        self.preference_model.remove_preference(
+            user_id=user_id, pref_id=pref_id, preference_type="genre"
+        )
 
         # send the updated list
         await query.message.edit_text(
@@ -172,38 +164,36 @@ class PreferenceController:
 
         authors_in_current_page = []
         for author in authors:
-            if any(
-                author[1] == pref_author[1]
-                for pref_author in preferred_authors
-            ):
-                authors_in_current_page.append("✅ " + str(author[0]))
-            else:
-                authors_in_current_page.append(str(author[0]))
+            author_name = author["author_name"]
+            author_tempo_id = author["author_tempo_id"]
+
+            for pref_author in preferred_authors:
+                if author_name == pref_author["author_name"]:
+                    author_name = f"✅ {author_name}"
+                    author_tempo_id = pref_author["pref_id"]
+
+            authors_in_current_page.append(
+                {
+                    "author_name": author_name,
+                    "author_tempo_id": author_tempo_id,
+                }
+            )
 
         for author_in_cp in authors_in_current_page:
-            if author_in_cp.startswith("✅"):
-                author_tempo_id = author_in_cp.split("✅")[-1].strip()
-                author_name = self.book_model.get_author_by_book_id(
-                    int(author_tempo_id)
-                )
+            author_name = author_in_cp["author_name"]
+            author_tempo_id = author_in_cp["author_tempo_id"]
 
-                author_name_showing_btn_text = "✅ " + author_name
+            if author_name.startswith("✅"):
                 callback_data = (
                     f"remove_author_from_pref:{author_tempo_id}:{current_page}"
                 )
             else:
-                author_tempo_id = author_in_cp
-                author_name = self.book_model.get_author_by_book_id(
-                    int(author_tempo_id)
-                )
-
-                author_name_showing_btn_text = author_name
                 callback_data = (
                     f"add_author_to_pref:{author_tempo_id}:{current_page}"
                 )
 
             author_name_showing_btn = InlineKeyboardButton(
-                text=author_name_showing_btn_text, callback_data=callback_data
+                text=author_name, callback_data=callback_data
             )
             btn_builder.add(author_name_showing_btn)
 
@@ -248,35 +238,36 @@ class PreferenceController:
 
         genres_in_cp = []
         for category in categories:
-            if any(
-                category[0] == pref_genre[0] for pref_genre in preferred_genres
-            ):
-                genres_in_cp.append("✅ " + category[1])
-            else:
-                genres_in_cp.append(category[1])
+            category_name = category["category_name"]
+            category_id = category["category_id"]
+
+            for pref_genre in preferred_genres:
+                if category_id == pref_genre["category_id"]:
+                    category_name = f"✅ {category_name}"
+                    category_id = pref_genre["pref_id"]
+
+            genres_in_cp.append(
+                {
+                    "category_name": category_name,
+                    "category_id": category_id,
+                }
+            )
 
         for genre_in_cp in genres_in_cp:
-            if genre_in_cp.startswith("✅"):
-                category_name = genre_in_cp.split("✅")[-1].strip()
-                category_id = self.category_model.get_category_id(
-                    category_name
-                )
+            category_name = genre_in_cp["category_name"]
+            category_id = genre_in_cp["category_id"]
 
+            if category_name.startswith("✅"):
                 callback_data = (
                     f"remove_genre_from_pref:{category_id}:{current_page}"
                 )
             else:
-                category_name = genre_in_cp
-                category_id = self.category_model.get_category_id(
-                    category_name
-                )
-
                 callback_data = (
                     f"add_genre_to_pref:{category_id}:{current_page}"
                 )
 
             category_name_showing_btn = InlineKeyboardButton(
-                text=genre_in_cp, callback_data=callback_data
+                text=category_name, callback_data=callback_data
             )
             btn_builder.add(category_name_showing_btn)
 

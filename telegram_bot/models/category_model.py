@@ -38,7 +38,7 @@ class CategoryModel:
 
         def get_categories(self, limit_start):
                 conn = DB()
-                cursor = conn.cursor()
+                cursor = conn.cursor(dictionary=True)
 
                 sql = "SELECT category_id,category_name FROM category WHERE \
                         sub_category_parent_id=0 AND category_name NOT \

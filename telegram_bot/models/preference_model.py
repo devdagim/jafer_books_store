@@ -22,23 +22,23 @@ class PreferenceModel:
         return bool(result[0])
 
     # tempo_author_id is the author_id alone side with book_id(it uses the book id)
-    def _is_preference_exist(self, user_id, id, preference_type):
+    def _is_preference_exist(
+        self, user_id, preference_type, category_id=None, author_name=None
+    ):
         conn = DB()
         cursor = conn.cursor(buffered=True)
 
         if preference_type == "author":
             sql = "SELECT COUNT(*) FROM author_preference WHERE user_id=%s \
                 AND author_name=%s"
-            author_name = self.book_model.get_author_by_book_id(id)
-            second_arg = author_name
+            second_parma = author_name
 
         elif preference_type == "genre":
             sql = "SELECT COUNT(*) FROM genre_preference WHERE user_id=%s \
                 AND category_id=%s"
-            category_id = id
-            second_arg = category_id
+            second_parma = category_id
 
-        cursor.execute(sql, (user_id, second_arg))
+        cursor.execute(sql, (user_id, second_parma))
 
         result = cursor.fetchone()
 
@@ -46,22 +46,25 @@ class PreferenceModel:
 
         return bool(result[0])
 
-    def save_preference(self, user_id, id, preference_type):
+    def save_preference(
+        self, user_id, preference_type, category_id=None, author_name=None
+    ):
         conn = DB()
         cursor = conn.cursor()
 
         is_preference_exist = self._is_preference_exist(
-            user_id, id, preference_type
+            user_id, preference_type,category_id=category_id,author_name=author_name
         )
 
         if not is_preference_exist:
             if preference_type == "author":
                 sql = "INSERT INTO author_preference(user_id,author_name) VALUES(%s,%s)"
-                author_name = self.book_model.get_author_by_book_id(id)
-                cursor.execute(sql, (user_id, author_name))
+                second_parma = author_name
             elif preference_type == "genre":
                 sql = "INSERT INTO genre_preference(user_id,category_id) VALUES(%s,%s)"
-                cursor.execute(sql, (user_id, id))
+                second_parma = category_id
+
+            cursor.execute(sql, (user_id, second_parma))
 
             conn.commit()
 
@@ -115,7 +118,7 @@ class PreferenceModel:
 
     def get_preferred_authors(self, user_id):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
         sql = "SELECT pref_id,author_name FROM author_preference WHERE user_id=%s"
         cursor.execute(sql, (user_id,))
@@ -129,9 +132,9 @@ class PreferenceModel:
 
     def get_preferred_genres(self, user_id):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
-        sql = "SELECT category_id FROM genre_preference WHERE user_id=%s"
+        sql = "SELECT pref_id,category_id FROM genre_preference WHERE user_id=%s"
         cursor.execute(sql, (user_id,))
 
         authors = cursor.fetchall()

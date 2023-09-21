@@ -50,14 +50,14 @@ async def add_author_handler(query: CallbackQuery):
     F.data.startswith("remove_author_from_pref:")
 )
 async def remove_author_handler(query: CallbackQuery):
-    author_tempo_id = query.data.split(":")[1].strip()
+    pref_id = query.data.split(":")[1].strip()
     page_num = query.data.split(":")[2].strip()
 
     await Execute(
         "controllers.preference_controller",
         "PreferenceController@remove_author_from_pref",
         query=query,
-        author_tempo_id=int(author_tempo_id),
+        pref_id=int(pref_id),
         page_num=int(page_num),
     ).exc()
 
@@ -99,14 +99,14 @@ async def add_genre_handler(query: CallbackQuery):
 
 @preference_router.callback_query(F.data.startswith("remove_genre_from_pref:"))
 async def remove_genre_handler(query: CallbackQuery):
-    category_id = query.data.split(":")[1].strip()
+    pref_id = query.data.split(":")[1].strip()
     page_num = query.data.split(":")[2].strip()
 
     await Execute(
         "controllers.preference_controller",
         "PreferenceController@remove_genre_from_pref",
         query=query,
-        category_id=int(category_id),
+        pref_id=int(pref_id),
         page_num=int(page_num),
     ).exc()
 
