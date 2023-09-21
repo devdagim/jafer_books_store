@@ -36,14 +36,14 @@ class CategoryModel:
 
                 return result[0] if result else None
 
-        def get_categories(self):
+        def get_categories(self, limit_start):
                 conn = DB()
                 cursor = conn.cursor()
 
                 sql = "SELECT category_id,category_name FROM category WHERE \
                         sub_category_parent_id=0 AND category_name NOT \
-                        LIKE 'Uncategorized%'"
-                cursor.execute(sql)
+                        LIKE 'Uncategorized%' LIMIT %s,8"
+                cursor.execute(sql,(limit_start,))
 
                 result = cursor.fetchall()
 
@@ -51,6 +51,22 @@ class CategoryModel:
                 cursor.close()
 
                 return result
+        
+        def total_categories(self):
+                conn = DB()
+                cursor = conn.cursor(buffered=True)
+
+                sql = "SELECT COUNT(*) FROM category WHERE \
+                        sub_category_parent_id=0 AND category_name NOT \
+                        LIKE 'Uncategorized%'"
+                cursor.execute(sql)
+
+                result = cursor.fetchone()
+
+                # close
+                cursor.close()
+
+                return result[0] if result else 0
 
         # checks the existence of the category attr
         def is_exist(self, category_name) -> bool:

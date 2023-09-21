@@ -163,7 +163,6 @@ class PreferenceController:
         total_authors = self.book_model.total_authors()
         list_authors_per_page = 8
         total_list_pages = ceil(total_authors / list_authors_per_page)
-
         limit_start = (current_page - 1) * list_authors_per_page
 
         authors = self.book_model.get_authors(limit_start)
@@ -221,7 +220,7 @@ class PreferenceController:
 
         # [author_ls=3,3,3,pag_btn=3/2,genre_prf=1]
         inline_buttons_row_size = self._btn_grid(
-            total_list=total_list_pages,
+            total_list=len(inline_buttons),
             list_per_page=8,
             current_page=current_page,
         )
@@ -238,11 +237,18 @@ class PreferenceController:
     def _genre_listing_inline_btn(self, user_id, current_page=1):
         btn_builder = InlineKeyboardBuilder()
 
-        categories = self.category_model.get_categories()
+        # pagination
+        total_categories = self.category_model.total_categories()
+        list_category_per_page = 8
+        total_list_pages = ceil(total_categories / list_category_per_page)
+        print("tl_pages",total_list_pages,"tl_catg",total_categories)
+        limit_start = (current_page - 1) * list_category_per_page
+        
+
+        categories = self.category_model.get_categories(limit_start)
         preferred_genres = self.preference_model.get_preferred_genres(user_id)
 
         inline_buttons = []
-
         for category in categories:
             if any(
                 category[0] == pref_genre[0] for pref_genre in preferred_genres
@@ -250,18 +256,11 @@ class PreferenceController:
                 inline_buttons.append("✅ " + category[1])
             else:
                 inline_buttons.append(category[1])
+        print("inline_buttons",inline_buttons)
 
-        list_category_per_page = 8
-        total_list_pages = ceil(len(inline_buttons) / list_category_per_page)
-
-        limit_start = (current_page - 1) * list_category_per_page
-        limit_end = limit_start + list_category_per_page
-
-        limited_inline_buttons = inline_buttons[limit_start:limit_end]
-
-        for inline_button_text in limited_inline_buttons:
-            if inline_button_text.startswith("✅"):
-                category_name = inline_button_text.split("✅")[-1].strip()
+        for inline_btn_text in inline_buttons:
+            if inline_btn_text.startswith("✅"):
+                category_name = inline_btn_text.split("✅")[-1].strip()
                 category_id = self.category_model.get_category_id(
                     category_name
                 )
@@ -270,7 +269,7 @@ class PreferenceController:
                     f"remove_genre_from_pref:{category_id}:{current_page}"
                 )
             else:
-                category_name = inline_button_text.strip()
+                category_name = inline_btn_text.strip()
                 category_id = self.category_model.get_category_id(
                     category_name
                 )
@@ -280,13 +279,14 @@ class PreferenceController:
                 )
 
             category_name_showing_btn = InlineKeyboardButton(
-                text=inline_button_text, callback_data=callback_data
+                text=inline_btn_text, callback_data=callback_data
             )
             btn_builder.add(category_name_showing_btn)
 
         pagination_buttons = self._pagination_buttons(
             current_page, total_list_pages, "genre_pref_page"
         )
+        print("inline_buttons",pagination_buttons)
         btn_builder.add(*pagination_buttons)
 
         next_step_btn = InlineKeyboardButton(
@@ -301,10 +301,12 @@ class PreferenceController:
             list_per_page=8,
             current_page=current_page,
         )
+        print("inline_buttons_row_size",inline_buttons_row_size)
         pagination_buttons_row_size = [
             len(pagination_buttons),
             1,
         ]
+        print("pagination_buttons_row_size",pagination_buttons_row_size)
         btn_builder.adjust(
             *inline_buttons_row_size, *pagination_buttons_row_size
         )
