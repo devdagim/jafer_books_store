@@ -38,24 +38,24 @@ app = FastAPI()
 @app.on_event("startup")
 async def on_startup():
     webhook_info = await Bot.get_webhook_info()
-    commands = [
-        BotCommand(
-            command="/preference",
-            description="✅ Set your preferences for personalized book recommendations",
-        ),
-        BotCommand(
-            command="/recommendation",
-            description="📚 Get personalized book suggestions",
-        ),
-        BotCommand(command="/wishlist", description="📌 Manage your wishlist"),
-        BotCommand(command="/search", description="🔎 Search for books"),
-        BotCommand(command="/contact", description="📞 To get contact info"),
-    ]
+    # commands = [
+    #     BotCommand(
+    #         command="/preference",
+    #         description="✅ Set your preferences for personalized book recommendations",
+    #     ),
+    #     BotCommand(
+    #         command="/recommendation",
+    #         description="📚 Get personalized book suggestions",
+    #     ),
+    #     BotCommand(command="/wishlist", description="📌 Manage your wishlist"),
+    #     BotCommand(command="/search", description="🔎 Search for books"),
+    #     BotCommand(command="/contact", description="📞 To get contact info"),
+    # ]
 
     if webhook_info.url != webhook_url:
         await Bot.set_webhook(url=webhook_url)
 
-    await Bot.set_my_commands(commands=commands)
+    # await Bot.set_my_commands(commands=commands)
 
 
 @app.post(webhook_path)

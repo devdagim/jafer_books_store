@@ -106,10 +106,7 @@ class PostModel:
         cursor.execute(sql, (book_code,))
         result = cursor.fetchone()
 
-        # close
-        # cursor.close()
-
-        return result[0] if result else " "
+        return result[0] if result else None
 
     def update_book_content_status(self, book_code):
         # UPDATE book SET book_content_status='1' WHERE book_code=

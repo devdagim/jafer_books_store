@@ -144,33 +144,25 @@ class BookModel:
 
                 return bool(updated_books)
 
-        def search_books(self, search_term, search_by="all"):
+        def search_books(self, search_term):
                 conn = DB()
                 cursor = conn.cursor(dictionary=True)
-
-                searchable_columns = None
-
-                if search_by == "all":
-                        searchable_columns = ("book_name"  ,"book_author")
-                elif search_by == "title":
-                        searchable_columns = ("book_name",)
-                elif search_by == "author":
-                        searchable_columns = ("book_author",)
                 
                 sql = """           
-                SELECT *
-                FROM book WHERE LOWER(CONCAT({searchable_column})) 
-                LIKE %s LIMIT 50
-                """.format(
-                        searchable_column=", ".join(searchable_columns)
-                )
-                cursor.execute(sql,("%"+str(search_term)+"%",))
+                SELECT * FROM book WHERE book_name LIKE %s OR book_author
+                LIKE %s OR book_category IN (
+                        SELECT category_id FROM category WHERE category_name 
+                        LIKE %s
+                ) LIMIT 50
+                """
+                search_term = "%" + search_term + "%"
+                cursor.execute(sql,(search_term, search_term, search_term))
                 
                 result = cursor.fetchall()
                 
                 cursor.close()
                 
-                return result if result else []
+                return result if result else None
 
         def get_authors(self):
                 conn = DB()
@@ -178,7 +170,7 @@ class BookModel:
                 sql = "SELECT book_id as author_id,book_author as \
                         author_name,COUNT(*) AS author_count FROM book \
                         WHERE book_author NOT LIKE 'unknown%' GROUP BY \
-                        book_author ORDER BY author_count DESC"
+                        author_name ORDER BY author_count DESC"
                 cursor.execute(sql)
 
                 authors = cursor.fetchall()
