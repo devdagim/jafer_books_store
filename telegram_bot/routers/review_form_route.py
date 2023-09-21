@@ -12,6 +12,7 @@ from telegram_bot.helpers.executor import Execute
 
 
 review_form_router = Router(name="REVIEW FORM ROUTER")
+review_form_state_router = Router(name="REVIEW FORM state ROUTER")
 
 
 class ReviewFormState(StatesGroup):
@@ -53,7 +54,7 @@ async def rating_handler(query: CallbackQuery, state: FSMContext):
     ).exc()
 
 
-@review_form_router.message(
+@review_form_state_router.message(
     StateFilter(ReviewFormState.review_cmt) and Command("cancel"),
 )
 async def cancel_review_commenting(message: Message, state: FSMContext):
@@ -74,7 +75,7 @@ async def cancel_review_commenting(message: Message, state: FSMContext):
     await state.clear()
 
 
-@review_form_router.message(
+@review_form_state_router.message(
     StateFilter(ReviewFormState.review_cmt) and F.content_type == "text"
 )
 async def review_cmt_handler(message: Message, state: FSMContext):
