@@ -2,21 +2,21 @@ from telegram_bot.helpers.db import DB
 
 
 class PostModel:
-    def check_unposted_books(self):
+    def check_un_posted_books(self):
         conn = DB()
-        cursor = conn.cursor()
+        cursor = conn.cursor(buffered=True)
 
-        sql = "SELECT COUNT(book_code) FROM post WHERE book_post_status='0';"
+        sql = "SELECT COUNT(*) FROM post WHERE book_post_status='0';"
         cursor.execute(sql)
 
-        unposted_books = cursor.fetchall()
+        un_posted_books = cursor.fetchone()
 
         # close
         cursor.close()
 
-        return bool(unposted_books)
+        return bool(un_posted_books)
 
-    def get_unposted_books(self, fetch_limit):
+    def get_un_posted_books(self, limit_start):
         conn = DB()
         cursor = conn.cursor(dictionary=True)
 
@@ -24,16 +24,16 @@ class PostModel:
                 book_usd_price,book_img_url,book_category,book_language,\
                 book_stoke_status FROM book JOIN post ON \
                 book.book_code=post.book_code WHERE book_post_status='0'\
-                LIMIT %s,%s;"
-        cursor.execute(sql, fetch_limit)
-        unposted_books = cursor.fetchall()
+                LIMIT %s,10;"
+        cursor.execute(sql,(limit_start,))
+        un_posted_books = cursor.fetchall()
 
         # close
         cursor.close()
 
-        return unposted_books
+        return un_posted_books
 
-    def get_updated_books(self, fetch_limit):
+    def get_updated_books(self, limit_start):
         conn = DB()
         cursor = conn.cursor(dictionary=True)
 
@@ -41,8 +41,8 @@ class PostModel:
                 b.book_usd_price,b.book_img_url,b.book_category,\
                 b.book_language,b.book_stoke_status,p.telegram_post_id as \
                 post_id FROM book b LEFT JOIN post p ON b.book_code=p.book_code\
-                WHERE b.book_content_status='1' LIMIT %s,%s;"
-        cursor.execute(sql, fetch_limit)
+                WHERE b.book_content_status='1' LIMIT %s,10"
+        cursor.execute(sql, (limit_start,))
         updated_books = cursor.fetchall()
 
         # close
@@ -59,17 +59,14 @@ class PostModel:
         )
         cursor.execute(sql)
 
-        unposted_books = cursor.fetchone()
+        count = cursor.fetchone()
 
         # close
         cursor.close()
 
-        if unposted_books:
-            return unposted_books[0]
-        else:
-            return 0
+        return count[0] if count else None
 
-    def unposted_books_count(self):
+    def un_posted_books_count(self):
         conn = DB()
         cursor = conn.cursor(buffered=True)
 
