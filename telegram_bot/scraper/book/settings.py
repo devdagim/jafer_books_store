@@ -1,5 +1,6 @@
 # Scrapy settings
 SETTINGS = {
+    'BOT_NAME': "book_spider_bot",
     # User Agent
     'USER_AGENT' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
         AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150\
@@ -24,7 +25,7 @@ SETTINGS = {
 
     # Configure the delay (in seconds) between consecutive requests to 
     # the same website (default: 0)
-    'DOWNLOAD_DELAY' : 0,
+    'DOWNLOAD_DELAY' : 1,
 
     # Configure the maximum number of concurrent items being processed by 
     # each spider (default: 100)
@@ -75,8 +76,8 @@ SETTINGS = {
     'RETRY_ENABLED' : True,
     
     #output setting
-    'FEED_URI': 'book.json',
-    'FEED_FORMAT': 'json',
+    # 'FEED_URI': 'book.json',
+    # 'FEED_FORMAT': 'json',
     
     # logging
     'LOG_FILE': 'book_spider_scrapy.log',
@@ -84,6 +85,4 @@ SETTINGS = {
     
     # Set settings whose default value is deprecated to a future-proof value
     'REQUEST_FINGERPRINTER_IMPLEMENTATION' : "2.7",
-    'TWISTED_REACTOR' : "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
-    'FEED_EXPORT_ENCODING' : "utf-8"
 }
