@@ -43,17 +43,19 @@ https://www.jaferbooks.com
 Search_Guide = """
 How would you like to search for books? 📚🔍
 
-Search by:
-👤 Author Name: <code>{bot_username} author: [author name]</code>
-📚 Book Name: <code>{bot_username} book: [book name]</code>
-🔎 Keyword: <code>{bot_username} [book name] or [author name]</code>
+Search:
+by 👤 Book Author: <code>{bot_username} [book author name]</code>
 
-Example: to search for books by the author "J.K. Rowling," you can use:
-<code>{bot_username} author: J.K. Rowling</code>
+by 📚 Book Title: <code>{bot_username} [book title]</code>
 
-Example: to search for a book with the title "Harry Potter," you can use:
-<code>{bot_username} book: Harry Potter</code>
+by 🔖 Book Genre: <code>{bot_username} [book genre name]</code>
 
-Example: to search for books related to "Harry Potter" or "J.K. Rowling," you can use:
-<code>{bot_username} Harry Potter or J.K. Rowling</code>
+Example: to search for books by the author
+<code>{bot_username} J.K. Rowling</code>
+
+Example: to search for a book with the title
+<code>{bot_username} Harry Potter</code>
+
+Example: to search for books by the genre
+<code>{bot_username} fiction</code>
 """

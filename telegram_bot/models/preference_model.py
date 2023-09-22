@@ -6,7 +6,8 @@ class PreferenceModel:
     book_model = BookModel()
 
     def is_set_preference(self, user_id, preference_type):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor(buffered=True)
 
         if preference_type == "author":
             sql = "SELECT COUNT(*) FROM author_preference WHERE user_id=%s"
@@ -16,26 +17,28 @@ class PreferenceModel:
         cursor.execute(sql, (user_id,))
 
         result = cursor.fetchone()
+        cursor.close()
 
         return bool(result[0])
 
     # tempo_author_id is the author_id alone side with book_id(it uses the book id)
-    def _is_preference_exist(self, user_id, id, preference_type):
-        cursor = DB.cursor()
+    def _is_preference_exist(
+        self, user_id, preference_type, category_id=None, author_name=None
+    ):
+        conn = DB()
+        cursor = conn.cursor(buffered=True)
 
         if preference_type == "author":
             sql = "SELECT COUNT(*) FROM author_preference WHERE user_id=%s \
                 AND author_name=%s"
-            author_name = self.book_model.get_author_by_book_id(id)
-            second_arg = author_name
+            second_parma = author_name
 
         elif preference_type == "genre":
             sql = "SELECT COUNT(*) FROM genre_preference WHERE user_id=%s \
                 AND category_id=%s"
-            category_id = id
-            second_arg = category_id
+            second_parma = category_id
 
-        cursor.execute(sql, (user_id, second_arg))
+        cursor.execute(sql, (user_id, second_parma))
 
         result = cursor.fetchone()
 
@@ -43,28 +46,33 @@ class PreferenceModel:
 
         return bool(result[0])
 
-    def save_preference(self, user_id, id, preference_type):
-        cursor = DB.cursor()
+    def save_preference(
+        self, user_id, preference_type, category_id=None, author_name=None
+    ):
+        conn = DB()
+        cursor = conn.cursor()
 
         is_preference_exist = self._is_preference_exist(
-            user_id, id, preference_type
+            user_id, preference_type,category_id=category_id,author_name=author_name
         )
 
         if not is_preference_exist:
             if preference_type == "author":
                 sql = "INSERT INTO author_preference(user_id,author_name) VALUES(%s,%s)"
-                author_name = self.book_model.get_author_by_book_id(id)
-                cursor.execute(sql, (user_id, author_name))
+                second_parma = author_name
             elif preference_type == "genre":
                 sql = "INSERT INTO genre_preference(user_id,category_id) VALUES(%s,%s)"
-                cursor.execute(sql, (user_id, id))
+                second_parma = category_id
 
-            DB.commit()
+            cursor.execute(sql, (user_id, second_parma))
+
+            conn.commit()
 
         cursor.close()
 
     def remove_preference(self, user_id, pref_id, preference_type):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor()
 
         if preference_type == "author":
             sql = (
@@ -76,12 +84,13 @@ class PreferenceModel:
             )
 
         cursor.execute(sql, (user_id, pref_id))
-        DB.commit()
+        conn.commit()
 
         cursor.close()
 
     def get_pref_id_by_author_name(self, user_id, author_name):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor(buffered=True)
 
         sql = "SELECT pref_id FROM author_preference WHERE user_id=%s AND author_name=%s"
         cursor.execute(sql, (user_id, author_name))
@@ -92,9 +101,10 @@ class PreferenceModel:
         cursor.close()
 
         return result[0] if result else None
-    
+
     def get_pref_id_by_category_id(self, user_id, category_id):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor(buffered=True)
 
         sql = "SELECT pref_id FROM genre_preference WHERE user_id=%s AND category_id=%s"
         cursor.execute(sql, (user_id, category_id))
@@ -107,7 +117,8 @@ class PreferenceModel:
         return result[0] if result else None
 
     def get_preferred_authors(self, user_id):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor(dictionary=True)
 
         sql = "SELECT pref_id,author_name FROM author_preference WHERE user_id=%s"
         cursor.execute(sql, (user_id,))
@@ -118,11 +129,12 @@ class PreferenceModel:
         cursor.close()
 
         return authors
-    
-    def get_preferred_genres(self, user_id):
-        cursor = DB.cursor()
 
-        sql = "SELECT category_id FROM genre_preference WHERE user_id=%s"
+    def get_preferred_genres(self, user_id):
+        conn = DB()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = "SELECT pref_id,category_id FROM genre_preference WHERE user_id=%s"
         cursor.execute(sql, (user_id,))
 
         authors = cursor.fetchall()

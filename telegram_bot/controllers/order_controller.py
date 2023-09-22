@@ -22,16 +22,14 @@ class OrderController:
             parse_mode="html",
         )
 
-    async def send_selected_order_option(self, query, data):
-        selected_option = int(data["order_option"])
-        book_code = data["book_code"]
+    async def send_selected_order_option(self, query, book_code, order_option):
         option = ""
 
-        if selected_option == 1:
+        if order_option == 1:
             option = self._visit_store_option(book_code)
-        elif selected_option == 2:
+        elif order_option == 2:
             option = self._phone_call_option(book_code)
-        elif selected_option == 3:
+        elif order_option == 3:
             option = self._visit_web_option(book_code)
 
         await query.message.edit_text(

@@ -5,12 +5,17 @@ from aiogram.filters import CommandStart, CommandObject
 
 
 # project
+from telegram_bot.middleware import ChannelJoinedMiddleware
 from telegram_bot.filter import BotDeepLink
 from telegram_bot.helpers.executor import Execute
 
 
 review_router = Router(name="REVIEW ROUTER")
 
+
+review_router.message.middleware(
+    ChannelJoinedMiddleware(["deep_link::reviews_btn&book_code={str}"])
+)
 
 @review_router.message(
     CommandStart(deep_link=True,deep_link_encoded=True),

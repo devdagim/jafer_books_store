@@ -38,7 +38,7 @@ class RecommendationController:
 
             # header
             await message.answer(
-                text="""🔍 <b>Recommended Books:</b>""", parse_mode="html"
+                text="""✅ <b>Recommended Books:</b>""", parse_mode="html"
             )
             # wishlist body
             await message.answer(
@@ -123,38 +123,33 @@ class RecommendationController:
         back_page = current_list_page - 1
         next_page = current_list_page + 1
 
-        if total_list > list_per_page:
-            back_btn = InlineKeyboardButton(
-                text="⏪ back",
-                callback_data=f"recommendation_page:{back_page}",
-            )
-            page_info_btn = InlineKeyboardButton(
-                text=str(current_list_page) + "/" + str(total_list_pages),
-                callback_data="disabled_btn",
-            )
-            next_btn = InlineKeyboardButton(
-                text="next ⏩",
-                callback_data=f"recommendation_page:{next_page}",
-            )
+        back_btn = InlineKeyboardButton(
+            text="⏪ back",
+            callback_data=f"recommendation_page:{back_page}",
+        )
+        page_info_btn = InlineKeyboardButton(
+            text=str(current_list_page) + "/" + str(total_list_pages),
+            callback_data="disabled_btn",
+        )
+        next_btn = InlineKeyboardButton(
+            text="next ⏩",
+            callback_data=f"recommendation_page:{next_page}",
+        )
 
-            if (
-                current_list_page == total_list_pages
-                and current_list_page == 1
-            ):
-                pagination_buttons = [page_info_btn]
-            elif current_list_page == 1:
-                pagination_buttons = [page_info_btn, next_btn]
-            elif current_list_page == total_list_pages:
-                pagination_buttons = [back_btn, page_info_btn]
-            else:
-                pagination_buttons = [
-                    back_btn,
-                    page_info_btn,
-                    next_btn,
-                ]
+        if current_list_page == total_list_pages and current_list_page == 1:
+            pagination_buttons = [page_info_btn]
+        elif current_list_page == 1:
+            pagination_buttons = [page_info_btn, next_btn]
+        elif current_list_page == total_list_pages:
+            pagination_buttons = [back_btn, page_info_btn]
+        else:
+            pagination_buttons = [
+                back_btn,
+                page_info_btn,
+                next_btn,
+            ]
 
-            btn_builder = InlineKeyboardBuilder()
-            btn_builder.add(*pagination_buttons)
-            btn_markup = btn_builder.as_markup()
+        btn_builder = InlineKeyboardBuilder()
+        btn_builder.add(*pagination_buttons)
 
-        return btn_markup if btn_markup else None
+        return btn_builder.as_markup()

@@ -3,7 +3,8 @@ from telegram_bot.helpers.db import DB
 
 class ReviewModel:
     def book_avg_rating(self, book_code):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor(buffered=True)
 
         sql = (
             "SELECT ROUND(AVG(rating),1) FROM book_review WHERE book_code=%s;"
@@ -15,12 +16,13 @@ class ReviewModel:
         # close
         cursor.close()
 
-        return result[0] if result else 0
+        return result[0] if result[0] is not None else 0
 
     def save_review(self, book_code, user_id, rating, review=None):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor()
 
-        if self._is_review_exist(cursor, book_code, user_id):
+        if self._is_review_exist(book_code, user_id):
             sql = "UPDATE book_review SET rating=%s,review=%s WHERE \
                 book_code=%s AND user_id=%s"
             cursor.execute(sql, (rating, review, book_code, user_id))
@@ -30,20 +32,25 @@ class ReviewModel:
             VALUES(%s,%s,%s,%s)"
             cursor.execute(sql, (book_code, user_id, rating, review))
 
-        DB.commit()
+        conn.commit()
 
         # close
         cursor.close()
 
-    def _is_review_exist(self, cursor, book_code, user_id):
+    def _is_review_exist(self, book_code, user_id):
+        conn = DB()
+        cursor = conn.cursor(buffered=True)
         sql = "SELECT COUNT(*) FROM book_review WHERE book_code=%s AND user_id=%s"
         cursor.execute(sql, (book_code, user_id))
+
         is_exists = cursor.fetchone()
+        cursor.close()
 
         return bool(is_exists[0])
 
     def get_reviews(self, book_code, fetch_limit):
-        cursor = DB.cursor(dictionary=True)
+        conn = DB()
+        cursor = conn.cursor(dictionary=True)
 
         start, end = fetch_limit
         sql = "SELECT * FROM book_review WHERE book_code=%s LIMIT %s,%s"
@@ -57,7 +64,8 @@ class ReviewModel:
         return result if result else None
 
     def total_reviews(self, book_code):
-        cursor = DB.cursor()
+        conn = DB()
+        cursor = conn.cursor(buffered=True)
 
         sql = "SELECT COUNT(*) FROM book_review WHERE book_code=%s"
         cursor.execute(sql, (book_code,))

@@ -2,7 +2,6 @@
 from aiogram import Router
 from aiogram.types import InlineQuery
 
-
 # project
 from telegram_bot.helpers.executor import Execute
 

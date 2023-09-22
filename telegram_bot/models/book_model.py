@@ -20,7 +20,8 @@ class BookModel:
                         self.create_post_placeholder(book[0])
 
         def add_book(self, book):
-                cursor = DB.cursor()
+                conn = DB()
+                cursor = conn.cursor()
 
                 sql = "INSERT INTO book (book_code,book_name,\
                         book_author,book_etb_price,book_usd_price,\
@@ -29,13 +30,14 @@ class BookModel:
                         (%s, %s, %s, %s, %s, %s, %s, %s, %s);"
 
                 cursor.execute(sql,book)
-                DB.commit()
+                conn.commit()
 
                 # close
                 cursor.close()
 
         def update_book(self, book):
-                cursor = DB.cursor()
+                conn = DB()
+                cursor = conn.cursor()
 
                 sql = f"UPDATE book SET book_code = %s, book_name = %s,\
                         book_author = %s,book_etb_price = %s, book_usd_price = %s, \
@@ -44,7 +46,7 @@ class BookModel:
                         book_content_status='1' WHERE book_code={book[0]}"
 
                 cursor.execute(sql,book)
-                DB.commit()
+                conn.commit()
 
                 # close
                 cursor.close()
@@ -52,19 +54,21 @@ class BookModel:
         # creates placeholder in post table in order 
         # the book to posted in the channel
         def create_post_placeholder(self, book_code):
-                cursor = DB.cursor()
+                conn = DB()
+                cursor = conn.cursor()
 
                 sql = "INSERT INTO post(book_code) VALUES(%s);"
 
                 cursor.execute(sql,(book_code,))
-                DB.commit()
+                conn.commit()
 
                 # close
                 cursor.close()
 
         # check the book exist in the table
         def is_exist(self, book_code) -> bool:
-                cursor = DB.cursor()
+                conn = DB()
+                cursor = conn.cursor(buffered=True)
 
                 sql = "SELECT book_id FROM book WHERE\
                         book_code =%s"
@@ -78,7 +82,8 @@ class BookModel:
                 return bool(is_exists)
         
         def get_book(self, book_code):
-                cursor = DB.cursor(dictionary=True)
+                conn = DB()
+                cursor = conn.cursor(dictionary=True,buffered=True)
 
                 sql = "SELECT * FROM book WHERE\
                         book_code =%s"
@@ -92,7 +97,8 @@ class BookModel:
                 return books if books else None
         
         def get_author_by_book_id(self, book_id):
-                cursor = DB.cursor()
+                conn = DB()
+                cursor = conn.cursor(buffered=True)
 
                 sql = "SELECT book_author FROM book WHERE\
                         book_id =%s"
@@ -107,7 +113,8 @@ class BookModel:
         
         # check the specific columns are changed form the table
         def is_changed(self, changeable_columns) -> bool:
-                cursor = DB.cursor()
+                conn = DB()
+                cursor = conn.cursor(buffered=True)
 
                 sql = "SELECT book_id FROM book WHERE book_code =%s AND \
                         (book_etb_price != %s OR book_usd_price != %s \
@@ -124,7 +131,8 @@ class BookModel:
                 return bool(is_their_change)
 
         def check_updated_books(self):
-                cursor = DB.cursor()
+                conn = DB()
+                cursor = conn.cursor()
 
                 sql = "SELECT * FROM book WHERE book_content_status='1';"
                 cursor.execute(sql)
@@ -136,38 +144,35 @@ class BookModel:
 
                 return bool(updated_books)
 
-        def search_books(self, search_term, search_by="all"):
-                cursor = DB.cursor(dictionary=True)
-
-                searchable_columns = None
-
-                if search_by == "all":
-                        searchable_columns = ("book_name"  ,"book_author")
-                elif search_by == "title":
-                        searchable_columns = ("book_name",)
-                elif search_by == "author":
-                        searchable_columns = ("book_author",)
+        def search_books(self, search_term):
+                conn = DB()
+                cursor = conn.cursor(dictionary=True)
                 
                 sql = """           
-                SELECT *
-                FROM book WHERE LOWER(CONCAT({searchable_column})) 
-                LIKE %s LIMIT 50
-                """.format(
-                        searchable_column=", ".join(searchable_columns)
-                )
-                cursor.execute(sql,("%"+str(search_term)+"%",))
+                SELECT * FROM book WHERE book_name LIKE %s OR book_author
+                LIKE %s OR book_category IN (
+                        SELECT category_id FROM category WHERE category_name 
+                        LIKE %s
+                ) LIMIT 50
+                """
+                search_term = "%" + search_term + "%"
+                cursor.execute(sql,(search_term, search_term, search_term))
                 
                 result = cursor.fetchall()
                 
                 cursor.close()
                 
-                return result if result else []
+                return result if result else None
 
-        def get_authors(self):
-                cursor = DB.cursor()
-
-                sql = "SELECT DISTINCT book_id as author_id,book_author as author_name FROM book"
-                cursor.execute(sql)
+        def get_authors(self, limit_start):
+                conn = DB()
+                cursor = conn.cursor(dictionary=True)
+                sql = "SELECT book_id as author_tempo_id,book_author as \
+                        author_name,COUNT(*) AS author_count FROM book \
+                        WHERE book_author NOT LIKE 'unknown%' GROUP BY \
+                        author_name ORDER BY author_count DESC, \
+                        author_name ASC LIMIT %s,8"
+                cursor.execute(sql, (limit_start,))
 
                 authors = cursor.fetchall()
 
@@ -175,3 +180,17 @@ class BookModel:
                 cursor.close()
                 
                 return authors
+        
+        def total_authors(self):
+                conn = DB()
+                cursor = conn.cursor(buffered=True)
+                sql = "SELECT COUNT(DISTINCT book_author) AS total_authors \
+                        FROM book WHERE book_author NOT LIKE 'unknown%';"
+                cursor.execute(sql)
+
+                total = cursor.fetchone()
+
+                # close
+                cursor.close()
+                
+                return total[0] if total else 0

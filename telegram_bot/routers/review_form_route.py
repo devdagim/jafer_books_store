@@ -1,25 +1,31 @@
 # aiogram
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
-from aiogram.filters import CommandStart, CommandObject, Command
+from aiogram.filters import CommandStart, CommandObject, Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
 
 # project
+from telegram_bot.middleware import ChannelJoinedMiddleware
 from telegram_bot.filter import BotDeepLink
 from telegram_bot.helpers.executor import Execute
 
 
 review_form_router = Router(name="REVIEW FORM ROUTER")
+review_form_state_router = Router(name="REVIEW FORM state ROUTER")
 
+
+review_form_router.message.middleware(
+    ChannelJoinedMiddleware(["deep_link::write_review&book_code={str}"])
+)
 
 class ReviewFormState(StatesGroup):
     review_cmt = State()
 
 
 @review_form_router.message(
-    CommandStart(deep_link=True,deep_link_encoded=True),
+    CommandStart(deep_link=True, deep_link_encoded=True),
     BotDeepLink("write_review&book_code={str}"),
 )
 async def write_review_handler(
@@ -53,9 +59,8 @@ async def rating_handler(query: CallbackQuery, state: FSMContext):
     ).exc()
 
 
-@review_form_router.message(
-    ReviewFormState.review_cmt,
-    Command("cancel"),
+@review_form_state_router.message(
+    StateFilter(ReviewFormState.review_cmt),Command("cancel"),
 )
 async def cancel_review_commenting(message: Message, state: FSMContext):
     data = await state.get_data()
@@ -75,8 +80,8 @@ async def cancel_review_commenting(message: Message, state: FSMContext):
     await state.clear()
 
 
-@review_form_router.message(
-    ReviewFormState.review_cmt, F.content_type == "text"
+@review_form_state_router.message(
+    StateFilter(ReviewFormState.review_cmt), F.content_type == "text"
 )
 async def review_cmt_handler(message: Message, state: FSMContext):
     data = await state.get_data()

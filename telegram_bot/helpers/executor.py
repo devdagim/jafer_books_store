@@ -61,5 +61,6 @@ class Execute:
             func = getattr(controller_class, method_name)
             return func(self=controller_class(), *self.args, **self.kwargs)
 
-        except (ImportError, AttributeError):
-            raise "Controller or function not found."
+        except (ImportError, AttributeError) as e:
+            print(f"Controller or function not found. {e}")
+            raise f"Controller or function not found. {e}"

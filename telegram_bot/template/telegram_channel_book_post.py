@@ -13,7 +13,7 @@ CHANNEL_POST_BODY = """
 {hashtag_category_names} #{hashtag_book_name} #{hashtag_author_name}
 
     <b><i>"ሃገር ያለአንድነት ህሊና ያለንባብ አይበለፅግም!"</i></b>
-@JaferBooksStore | @JaferBooksBot
+
 <a href="{book_img_url}">&#8288;</a>
 """
 

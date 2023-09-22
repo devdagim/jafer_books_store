@@ -6,21 +6,17 @@ from aiogram.types import (
     InlineKeyboardButton,
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.utils.deep_linking import create_start_link
-
 
 # project
-from telegram_bot.bot_instance import Bot
+from telegram_bot.helpers.config import CONFIG
 from telegram_bot.models.book_model import BookModel
 from telegram_bot.models.category_model import CategoryModel
 from telegram_bot.models.review_model import ReviewModel
+from telegram_bot.models.post_model import PostModel
 from telegram_bot.template.telegram_channel_book_post import (
     CHANNEL_POST_BODY,
     IN_STOCK_TEXT,
     OUT_OF_STOCK_TEXT,
-    ORDER_NOW_BTN_TEXT,
-    ADD_TO_WISHLIST_BTN_TEXT,
-    REVIEWS_BTN_TEXT,
 )
 
 
@@ -28,14 +24,16 @@ class SearchController:
     book_model = BookModel()
     category_model = CategoryModel()
     review_model = ReviewModel()
+    post_model = PostModel()
 
     async def send_search_results(self, inline_q):
-        search_term, search_by = self._parse_query(inline_q)
-        matches = self.book_model.search_books(search_term, search_by)
+        search_term = inline_q.query.strip().lower()
+        search_matched_books = self.book_model.search_books(search_term)
 
-        if matches:
-            query_results = []
-            for book in matches:
+        query_results = []
+
+        if search_matched_books:
+            for book in search_matched_books:
                 book_category = self.category_model.get_book_category(
                     book["book_category"]
                 )
@@ -50,6 +48,7 @@ class SearchController:
                     message_text=self._input_message(selected_book=book),
                     parse_mode="html",
                 )
+
                 input_message_inline_btn = (
                     await self._input_message_inline_btn(book["book_code"])
                 )
@@ -67,6 +66,7 @@ class SearchController:
                     )
                 )
 
+        if query_results:
             inline_q_header_btn = InlineQueryResultsButton(
                 text="visit our Channel for more",
                 start_parameter="visit_channel",
@@ -125,47 +125,19 @@ class SearchController:
         return message_content
 
     async def _input_message_inline_btn(self, book_code):
-        inline_btn_builder = InlineKeyboardBuilder()
+        btn_builder = InlineKeyboardBuilder()
 
-        order_now_btn_link = await create_start_link(
-            bot=Bot,
-            payload=f"order_now_btn&book_code={book_code}",
-            encode=True,
-        )
-        order_now_btn = InlineKeyboardButton(
-            text=ORDER_NOW_BTN_TEXT, url=order_now_btn_link
-        )
+        post_id = self.post_model.get_post_id(book_code)
+        channel_username = CONFIG.get(
+            "telegram_api", "CHANNEL_USERNAME"
+        ).strip('"').lstrip("@")
 
-        add_to_wishlist_btn_link = await create_start_link(
-            bot=Bot, payload=f"wishlist_btn&book_code={book_code}", encode=True
-        )
-        add_to_wishlist_btn = InlineKeyboardButton(
-            text=ADD_TO_WISHLIST_BTN_TEXT, url=add_to_wishlist_btn_link
-        )
+        post_link = f"https://t.me/{channel_username}/"
+        if post_id:
+            post_link += post_id
 
-        reviews_btn_link = await create_start_link(
-            bot=Bot, payload=f"reviews_btn&book_code={book_code}", encode=True
-        )
-        reviews_btn = InlineKeyboardButton(
-            text=REVIEWS_BTN_TEXT, url=reviews_btn_link
-        )
+        view_detail = InlineKeyboardButton(text="View Detail", url=post_link)
 
-        inline_btn_builder.add(order_now_btn, add_to_wishlist_btn)
-        inline_btn_builder.add(reviews_btn)
-        inline_btn_builder.adjust(2)
+        btn_builder.add(view_detail)
 
-        return inline_btn_builder.as_markup()
-
-    def _parse_query(self, inline_q):
-        query = inline_q.query.strip("").lower()
-
-        search_by = "all"
-        search_term = query
-        if query.startswith("title:"):
-            search_by = "title"
-            search_term = query.split("title:")[-1]
-        elif query.startswith("author:"):
-            search_by = "author"
-            search_term = query.split("author:")[-1]
-
-        return (search_term.strip(), search_by)
+        return btn_builder.as_markup()

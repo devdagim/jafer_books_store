@@ -3,7 +3,8 @@ from telegram_bot.helpers.db import DB
 
 class RecommendationModel:
     def recommended_books(self, user_id, fetch_limit):
-        cursor = DB.cursor(dictionary=True)
+        conn = DB()
+        cursor = conn.cursor(dictionary=True)
 
         books_rated_by_slimier_book_rater = (
             self._books_rated_by_slimier_book_rater(current_user_id=user_id)
@@ -24,6 +25,7 @@ class RecommendationModel:
         cursor.execute(sql, (limit_start, end))
 
         result = cursor.fetchall()
+        cursor.close()
 
         return result if result else None
 
@@ -55,6 +57,12 @@ class RecommendationModel:
         SELECT book_code FROM book WHERE book_author IN (
             SELECT author_name FROM author_preference WHERE user_id={current_user_id}
         ) OR book_category IN (
-            SELECT category_id FROM genre_preference WHERE user_id={current_user_id}
-        )
+            SELECT category_id FROM category WHERE  category_id IN(
+                SELECT category_id FROM genre_preference WHERE user_id={current_user_id}
+            )
+        ) OR book_category IN (
+            SELECT sub_category_parent_id FROM category WHERE  sub_category_parent_id IN(
+                SELECT category_id FROM genre_preference WHERE user_id={current_user_id}
+            )
+        ) 
         """

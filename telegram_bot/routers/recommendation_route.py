@@ -4,10 +4,16 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 
 # project
+from telegram_bot.middleware import ChannelJoinedMiddleware
 from telegram_bot.helpers.executor import Execute
 
 
 recommendation_router = Router(name="recommendation route")
+
+
+recommendation_router.message.middleware(
+    ChannelJoinedMiddleware(["command::recommendation"])
+)
 
 
 @recommendation_router.message(Command("recommendation"))
