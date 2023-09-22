@@ -1,4 +1,5 @@
 import asyncio
+from time import sleep
 from math import ceil
 
 # aiogram
@@ -68,6 +69,7 @@ class PostController:
 
                 # saving post id and changing the post status
                 self.post_model.save_post(post_id, book_code)
+                sleep(40)
 
     # main func
     # editing posts form the channel
@@ -100,6 +102,7 @@ class PostController:
 
                 # changing book content status from updated-> original
                 self.post_model.update_book_content_status(book_code,0)
+                sleep(40)
 
     # class method | aiogram.bot.send_mes..
     # send message to telegram
@@ -110,6 +113,7 @@ class PostController:
             chat_id=self.CHANNEL_USERNAME,
             text=message,
             reply_markup=post_inline_btn,
+            request_timeout=120
         )
 
         post_id = response_msg.message_id
@@ -127,6 +131,7 @@ class PostController:
             message_id=post_id,
             text=message,
             reply_markup=inline_btn,
+            request_timeout=120
         )
 
     # class method
