@@ -132,12 +132,12 @@ class BookModel:
 
         def check_updated_books(self):
                 conn = DB()
-                cursor = conn.cursor()
+                cursor = conn.cursor(buffered=True)
 
-                sql = "SELECT * FROM book WHERE book_content_status='1';"
+                sql = "SELECT COUNT(*) FROM book WHERE book_content_status='1'"
                 cursor.execute(sql)
 
-                updated_books = cursor.fetchall()
+                updated_books = cursor.fetchone()
 
                 # close
                 cursor.close()
