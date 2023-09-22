@@ -60,7 +60,7 @@ async def rating_handler(query: CallbackQuery, state: FSMContext):
 
 
 @review_form_state_router.message(
-    StateFilter(ReviewFormState.review_cmt) and Command("cancel"),
+    StateFilter(ReviewFormState.review_cmt),Command("cancel"),
 )
 async def cancel_review_commenting(message: Message, state: FSMContext):
     data = await state.get_data()
@@ -81,7 +81,7 @@ async def cancel_review_commenting(message: Message, state: FSMContext):
 
 
 @review_form_state_router.message(
-    StateFilter(ReviewFormState.review_cmt) and F.content_type == "text"
+    StateFilter(ReviewFormState.review_cmt), F.content_type == "text"
 )
 async def review_cmt_handler(message: Message, state: FSMContext):
     data = await state.get_data()
