@@ -9,6 +9,7 @@ from telegram_bot.template.review_form_message import (
 )
 from telegram_bot.models.book_model import BookModel
 from telegram_bot.models.review_model import ReviewModel
+from telegram_bot.models.post_model import PostModel
 
 
 class ReviewFormController:
@@ -42,6 +43,8 @@ class ReviewFormController:
     async def save_review(
         self, book_code, rating, user_id, message=None, state=None
     ):
+        update_channel_post = False
+
         # save on giving review comment
         if message:
             review = message.text.strip("")
@@ -66,6 +69,7 @@ class ReviewFormController:
                     Thank you for sharing your feedback and for rating the book!
                     """
                 )
+                update_channel_post = True
 
                 await state.clear()
 
@@ -74,6 +78,11 @@ class ReviewFormController:
             self.review_model.save_review(
                 book_code=book_code, user_id=user_id, rating=rating
             )
+            update_channel_post = True
+
+        if update_channel_post:
+            post_model = PostModel()
+            post_model.update_book_content_status(book_code, status=1)
 
     def _check_review(self, review, entities_in_review) -> str | None:
         error_text = None
