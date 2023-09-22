@@ -1,8 +1,10 @@
 import asyncio
 from time import sleep
 from math import ceil
+import logging
 
 # aiogram
+from aiogram.exceptions import TelegramBadRequest,TelegramNetworkError
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.deep_linking import create_start_link
@@ -28,81 +30,107 @@ from telegram_bot.template.telegram_channel_book_post import (
 
 
 class PostController:
-    # MODEL
     post_model = PostModel()
     review_model = ReviewModel()
     category_model = CategoryModel()
 
-    # aiogram and Telegram bot config
     CHANNEL_USERNAME = CONFIG.get("telegram_api", "CHANNEL_USERNAME").strip(
         '"'
     )
 
-    # main func
     # posting books to channel
     def post(self):
-        # basic pagination algorithm
-        # to fetch all unposted books based on limit
-        post_per_round = 50  # fetch 50 rows per query
-        total_book = self.post_model.unposted_books_count()
+        # to fetch un_posted_books based by limit
+        post_per_round = 10
+        total_book = self.post_model.un_posted_books_count()
         total_round = ceil(total_book / post_per_round)
 
-        for round_number in range(total_round):
-            limit_start = round_number * post_per_round
-            limit_end = (round_number + 1) * post_per_round
-            fetch_limit = (limit_start, limit_end)
+        for current_round in range(1, total_round + 1):
+            limit_start = (current_round - 1) * post_per_round
 
-            # fetch unposted books
-            unposted_books = self.post_model.get_unposted_books(fetch_limit)
+            # fetch un_posted_books books
+            un_posted_books = self.post_model.get_un_posted_books(limit_start)
+            logging.info("post controller fetching un posted books")
+            sleep(1)
 
-            for book in unposted_books:
-                book_code = book["book_code"]
+            if un_posted_books:
+                for book in un_posted_books:
+                    book_code = book["book_code"]
 
-                # generating post template from static template
-                post_data = self.post_template(book)
+                    # generating post template from static template
+                    post_data = self.post_template(book)
 
-                # sending post to channel
-                loop = asyncio.get_event_loop()
-                post_id = loop.run_until_complete(
-                    self.send_post_to_channel(book_code, post_data)
+                    # sending post to channel
+                    loop = asyncio.get_event_loop()
+                    try:
+                        post_id = loop.run_until_complete(
+                            self.send_post_to_channel(book_code, post_data)
+                        )
+                        logging.info(
+                            "post controller sending un posted book to the channel"
+                        )
+
+                        # saving post id and changing the post status
+                        self.post_model.save_post(post_id, book_code)
+                        logging.info(
+                            "post controller saving post id and changing the post status"
+                        )
+                        sleep(1)
+
+                    except (TelegramBadRequest, TelegramNetworkError):
+                        logging.warning(
+                            f"post controller {book_code} cant be edited"
+                        )
+            else:
+                logging.info(
+                    "post controller finished sending un posted book to the channel"
                 )
 
-                # saving post id and changing the post status
-                self.post_model.save_post(post_id, book_code)
-                sleep(40)
-
-    # main func
     # editing posts form the channel
-    # on book attr updated
     def edit_post(self):
-        post_per_round = 50  # fetch 50 rows per query
+        post_per_round = 10
         total_book = self.post_model.updated_books_count()
         total_round = ceil(total_book / post_per_round)
 
-        for round_number in range(total_round):
-            limit_start = round_number * post_per_round
-            limit_end = (round_number + 1) * post_per_round
-            fetch_limit = (limit_start, limit_end)
+        for current_round in range(1, total_round + 1):
+            limit_start = (current_round - 1) * post_per_round
 
             # fetch updated books
-            updated_books = self.post_model.get_updated_books(fetch_limit)
-            for book in updated_books:
-                book_code = book["book_code"]
-                post_id = book["post_id"]
+            updated_books = self.post_model.get_updated_books(limit_start)
+            logging.info("post controller fetch updated books")
+            sleep(1)
 
-                # generating post template from static template
-                post_data = self.post_template(book)
+            if updated_books:
+                for book in updated_books:
+                    book_code = book["book_code"]
+                    post_id = book["post_id"]
+                    post_data = self.post_template(book)
 
-                # editing post from the channel
-                # for updated books
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(
-                    self.edit_post_from_channel(post_id, post_data, book_code)
+                    # editing post from the channel
+                    # for updated books
+                    loop = asyncio.get_event_loop()
+                    try:
+                        loop.run_until_complete(
+                            self.edit_post_from_channel(
+                                post_id, post_data, book_code
+                            )
+                        )
+                        logging.info(
+                            "post controller editing updated book from the channel"
+                        )
+                        
+                        # changing book content status from updated-> original
+                        self.post_model.update_book_content_status(book_code, 0)
+                        sleep(1)
+
+                    except (TelegramBadRequest, TelegramNetworkError):
+                        logging.warning(
+                            f"post controller {book_code} cant be edited"
+                        )
+            else:
+                logging.info(
+                    "post controller finished editing updated book from the channel"
                 )
-
-                # changing book content status from updated-> original
-                self.post_model.update_book_content_status(book_code,0)
-                sleep(40)
 
     # class method | aiogram.bot.send_mes..
     # send message to telegram
@@ -113,7 +141,7 @@ class PostController:
             chat_id=self.CHANNEL_USERNAME,
             text=message,
             reply_markup=post_inline_btn,
-            request_timeout=120
+            request_timeout=120,
         )
 
         post_id = response_msg.message_id
@@ -122,19 +150,16 @@ class PostController:
 
         # class method
 
-    # cls method | aiogram.bot.edit_...
-    # edit message from telegram channel
     async def edit_post_from_channel(self, post_id, message, book_code):
-        inline_btn = self.post_inline_btn(book_code)
+        inline_btn = await self.post_inline_btn(book_code)
         await Bot.edit_message_text(
             chat_id=self.CHANNEL_USERNAME,
             message_id=post_id,
             text=message,
             reply_markup=inline_btn,
-            request_timeout=120
+            request_timeout=120,
         )
 
-    # class method
     # generating inline btn for the post
     async def post_inline_btn(self, book_code):
         inline_btn_builder = InlineKeyboardBuilder()
