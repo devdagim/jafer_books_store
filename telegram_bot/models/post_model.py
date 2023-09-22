@@ -110,13 +110,13 @@ class PostModel:
 
         return result[0] if result else None
 
-    def update_book_content_status(self, book_code):
+    def update_book_content_status(self, book_code,status=0):
         # UPDATE book SET book_content_status='1' WHERE book_code=
         conn = DB()
         cursor = conn.cursor()
 
-        sql = "UPDATE book SET book_content_status='0' WHERE book_code=%s;"
-        cursor.execute(sql, (book_code,))
+        sql = "UPDATE book SET book_content_status=%s WHERE book_code=%s;"
+        cursor.execute(sql, (str(status),book_code))
         conn.commit()
 
         # close
