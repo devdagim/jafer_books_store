@@ -18,6 +18,117 @@
         =>change booK_content_status=0
             :means its original not updated or edited product
 
+├── bot_instance.py
+├── bot
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   ├── features
+│   │   ├── order
+│   │   │   ├── __init__.py
+│   │   │   ├── controllers
+│   │   │   │   └── order_controller.py
+│   │   │   ├── models
+│   │   │   │   └── order_model.py
+│   │   │   ├── routers
+│   │   │   │   └── order_route.py
+│   │   │   └── templates
+│   │   │       ├── order_message.py
+│   │   │       └── ...
+│   │   ├── post
+│   │   │   ├── __init__.py
+│   │   │   ├── controllers
+│   │   │   │   └── post_controller.py
+│   │   │   ├── models
+│   │   │   │   └── post_model.py
+│   │   │   ├── routers
+│   │   │   │   └── post_route.py
+│   │   │   └── templates
+│   │   │       ├── post_message.py
+│   │   │       └── ...
+│   │   ├── preference
+│   │   │   ├── __init__.py
+│   │   │   ├── controllers
+│   │   │   │   └── preference_controller.py
+│   │   │   ├── models
+│   │   │   │   └── preference_model.py
+│   │   │   ├── routers
+│   │   │   │   └── preference_route.py
+│   │   │   └── templates
+│   │   │       ├── preference_message.py
+│   │   │       └── ...
+│   │   └── ...
+│   ├── filters
+│   │   ├── __init__.py
+│   │   ├── bot_deep_link_filter.py
+│   │   └── ...
+│   ├── helpers
+│   │   ├── __init__.py
+│   │   ├── aiomysql_storage.py
+│   │   ├── bot_runner.py
+│   │   ├── config.py
+│   │   ├── db.py
+│   │   ├── event_storage.py
+│   │   └── ...
+│   ├── middlewares
+│   │   ├── __init__.py
+│   │   ├── channel_joined_middleware.py
+│   │   └── ...
+│   ├── routers
+│   │   ├── __init__.py
+│   │   ├── error_route.py
+│   │   ├── start_route.py
+│   │   └── ...
+│   ├── scheduler_events
+│   │   ├── __init__.py
+│   │   ├── book_event.py
+│   │   └── ...
+│   ├── scraper
+│   │   ├── __init__.py
+│   │   ├── book
+│   │   │   ├── __init__.py
+│   │   │   ├── book_spider.py
+│   │   │   ├── items_loader.py
+│   │   │   ├── items.py
+│   │   │   ├── pipelines.py
+│   │   │   └── settings.py
+│   │   ├── category
+│   │   │   ├── __init__.py
+│   │   │   ├── category_spider.py
+│   │   │   ├── items_loader.py
+│   │   │   ├── items.py
+│   │   │   ├── pipelines.py
+│   │   │   └── settings.py
+│   │   └── ...
+│   ├── templates
+│   │   ├── __init__.py
+│   │   ├── messages.py
+│   │   ├── order_message.py
+│   │   ├── review_form_message.py
+│   │   ├── review_message.py
+│   │   ├── static_cmds_message.py
+│   │   ├── telegram_channel_book_post.py
+│   │   └── wishlist_message.py
+│   └── management
+│       ├── __init__.py
+│       ├── commands
+│       │   ├── __init__.py
+│       │   └── ...
+│       └── ...
+├── manage.py
+├── readme.md
+├── requirements.txt
+└── static
+    ├── css
+    ├── js
+    └── ...
+
+# logic
+=> creating post table on trigger of the book table
+=> we don\t have no longer book table
+=> implement order functionality
+
 # Recommendation System Steps:
 
 1,Find users in the review table who have rated the same book as the current user(who rated rating > 2).
